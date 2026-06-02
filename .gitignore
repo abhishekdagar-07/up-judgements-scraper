@@ -1,0 +1,7 @@
+UP_Judgements/
+UP_Judgements_Index.xlsx
+progress.json
+test_*.pdf
+__pycache__/
+*.pyc
+.env
