@@ -1,72 +1,72 @@
-# UP Government Orders — Judgement Downloader & Analyser
+# UP Revision Petition Orders — Precedent Intelligence Tool
 
-A Python tool that scrapes all revision petition orders from the [Uttar Pradesh Invest UP portal](https://invest.up.gov.in/gos/) and creates a structured Excel index using AI-powered OCR.
+Turns an inaccessible corpus of scanned government orders into a structured, searchable precedent database — built by a litigator who needed it.
+
+## Why this exists
+
+Revision petition orders passed under the **Uttar Pradesh Urban Planning & Development Act** are public records, published on the [Invest UP portal](https://invest.up.gov.in/gos/). But they are scanned-image PDFs with no index, no search, and no way to find how the revisional authority has decided comparable disputes.
+
+I hit this wall directly while acting in a writ matter against GNIDA: the precedent I needed to understand how this authority rules — and what relief it grants — was effectively locked inside hundreds of unsearchable PDFs. So I built a tool to unlock it.
 
 ## What it does
 
-1. **Scrapes** all pages of government orders from invest.up.gov.in/gos/
-2. **Downloads** every judgement PDF into a local folder (`UP_Judgements/`)
-3. **OCR + Analysis** — converts scanned PDF pages to images and sends them to Claude AI (vision) for extraction
-4. **Creates an Excel file** (`UP_Judgements_Index.xlsx`) with these columns:
+1. **Scrapes** every page of orders from `invest.up.gov.in/gos/` (page count detected dynamically).
+2. **Downloads** each order PDF locally (skips files already fetched).
+3. **Reads** each scanned document with **Claude vision** — pages are rasterised and sent to the model for OCR plus structured extraction.
+4. **Builds a searchable index** (`UP_Judgements_Index.xlsx`) with the fields a litigator actually searches on:
 
-| Column | Description |
-|---|---|
-| Case Name | Full party names (e.g. "Sanjay Rastogi vs GNIDA") |
+| Field | What it captures |
+| --- | --- |
+| Case Name | Full party names |
 | Date of Judgement | Date the order was passed |
 | Author of Order | Signing officer and designation |
-| Lawyers Who Appeared | Advocates for both sides |
+| Lawyers Who Appeared | Counsel for both sides |
 | Brief Facts | 3–5 sentence summary of the dispute |
 | Relief Granted | Final outcome and directions |
-| PDF File | Local filename |
-| Source URL | Original download URL |
+| Source URL | Original order on the portal |
+
+The result: a corpus of ~900 scanned orders becomes a spreadsheet you can filter, sort, and search in minutes — the difference between *guessing* how an authority decides and *knowing*.
+
+## Stack
+
+- **Python**
+- `requests` + `BeautifulSoup4` — scraping the paginated portal
+- `PyMuPDF` (fitz) — rasterising scanned PDF pages to PNG (200 DPI)
+- **Anthropic API — Claude Haiku (vision)** — OCR + structured field extraction
+- `openpyxl` — formatted Excel output
+- `progress.json` checkpoint — fully resumable across runs
+
+Built AI-assisted (Claude).
 
 ## Setup
 
-### Prerequisites
-- Python 3.10+
-- Git ([download](https://git-scm.com/downloads))
-- An [Anthropic API key](https://console.anthropic.com/) (for Claude AI)
-
-### 1. Clone the repository
+**Prerequisites:** Python 3.10+, Git, an [Anthropic API key](https://console.anthropic.com/).
 
 ```bash
 git clone https://github.com/abhishekdagar-07/up-judgements-scraper.git
 cd up-judgements-scraper
-```
-
-### 2. Install dependencies
-
-```bash
 pip install -r requirements.txt
-```
-
-### Set your API key (optional — the script will prompt if not set)
-
-```bash
-# Windows PowerShell
-$env:ANTHROPIC_API_KEY = "sk-ant-..."
-
-# Linux / macOS
-export ANTHROPIC_API_KEY="sk-ant-..."
-```
-
-## Usage
-
-```bash
+export ANTHROPIC_API_KEY="sk-ant-..."   # or the script will prompt
 python up_judgements_scraper.py
 ```
 
-The script is **resumable** — if interrupted, re-run it and it picks up where it left off (progress is saved in `progress.json`).
+The run is **resumable** — if interrupted, re-run and it picks up from `progress.json`.
 
 ## Cost
 
-Uses Claude Haiku (vision) for OCR. Estimated cost for all ~900 judgements: **$3–6 USD**.
+Claude Haiku (vision) for OCR. Estimated **$3–6 USD** for the full ~900-order corpus.
 
-## Output
+## Design notes
 
-- `UP_Judgements/` — folder with all downloaded PDFs
-- `UP_Judgements_Index.xlsx` — formatted Excel spreadsheet with extracted data
+- **Vision, not text extraction** — the source PDFs are scans, so plain text parsing fails; pages are rendered to images and read by the model.
+- **200 DPI** — tuned high enough for reliable OCR on degraded government scans, low enough to keep payloads and cost down.
+- **Resumable by default** — a long batch job over a flaky government portal will get interrupted; the checkpoint makes that a non-event.
+- **Fields chosen for litigation, not generic metadata** — "relief granted" and "counsel who appeared" are what actually drive whether an order is useful precedent.
 
-## Legal Context
+## Generalising
 
-These are final orders passed in revision petitions filed under the **Uttar Pradesh Urban Planning and Development Act**, published by the UP state government on their official portal.
+The architecture — paginated scrape → download → rasterise → vision extraction → structured index — is portal-agnostic. Pointing it at another court or authority's order repository is a matter of swapping the listing selectors and the extraction schema.
+
+## Legal context
+
+These are final orders in revision petitions under the UP Urban Planning & Development Act, published by the State Government on its official portal.
