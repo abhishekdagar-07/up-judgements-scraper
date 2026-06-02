@@ -22,6 +22,8 @@ from bs4 import BeautifulSoup
 import anthropic
 
 warnings.filterwarnings("ignore")  # suppress SSL warnings
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 BASE_URL = "https://invest.up.gov.in"
 LISTING_URL = "https://invest.up.gov.in/gos/?pagenum={page}"

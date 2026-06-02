@@ -1,6 +1,6 @@
 requests
 beautifulsoup4
-pymupdf
+PyMuPDF
 openpyxl
 pdfplumber
 anthropic

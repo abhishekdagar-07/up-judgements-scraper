@@ -24,9 +24,17 @@ A Python tool that scrapes all revision petition orders from the [Uttar Pradesh 
 
 ### Prerequisites
 - Python 3.10+
+- Git ([download](https://git-scm.com/downloads))
 - An [Anthropic API key](https://console.anthropic.com/) (for Claude AI)
 
-### Install dependencies
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/abhishekdagar-07/up-judgements-scraper.git
+cd up-judgements-scraper
+```
+
+### 2. Install dependencies
 
 ```bash
 pip install -r requirements.txt
